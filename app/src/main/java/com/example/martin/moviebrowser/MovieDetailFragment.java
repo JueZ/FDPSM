@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.view.LayoutInflater;
+import android.widget.TextView;
 
 /**
  * Created by Martin on 08.11.2015.
@@ -27,15 +28,23 @@ public class MovieDetailFragment extends Fragment {
         return f;
     }
 
-    public String getShownIndex() {
+    public String getMovieName() {
         return getArguments().getString("movie");
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        Log.i("DETAIL", getMovieName());
+
+        View view = inflater.inflate(R.layout.fragment_moviedetail, container, false);
+
+        TextView textView = (TextView) view.findViewById(R.id.textViewTitle);
+        textView.setText(getMovieName());
+
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_moviedetail, container, false);
+        return view;
     }
 
 }

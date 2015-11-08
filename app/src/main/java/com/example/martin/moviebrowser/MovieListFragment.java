@@ -13,11 +13,28 @@ import android.widget.ListView;
  */
 public class MovieListFragment extends ListFragment {
 
+    public static MovieListFragment newInstance(String movie) {
+        MovieListFragment f = new MovieListFragment();
+
+        // Supply index input as an argument.
+        Bundle args = new Bundle();
+        args.putString("movie", movie);
+        f.setArguments(args);
+
+        return f;
+    }
+
+    public String getMovieName() {
+        return getArguments().getString("movie");
+    }
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        String[] values = new String[] { "A", "B", "C", "D" };
+
+
+        String[] values = new String[] { getMovieName(), "B", "C", "D" };
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, values);
 
@@ -50,4 +67,6 @@ public class MovieListFragment extends ListFragment {
             throw new ClassCastException(activity.toString() + " must implement OnMovieSelectedListener");
         }
     }
+
+
 }

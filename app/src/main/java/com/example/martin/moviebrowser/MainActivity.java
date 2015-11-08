@@ -13,6 +13,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity implements MovieListFragment.OnMovieSelectedListener {
 
@@ -24,6 +25,8 @@ public class MainActivity extends AppCompatActivity implements MovieListFragment
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
 
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
         Intent intent = getIntent();
         handleIntent(intent);
 
@@ -31,15 +34,16 @@ public class MainActivity extends AppCompatActivity implements MovieListFragment
 
     }
 
-    private void doMySearch(String search) {
+    private void doMySearch(String movie) {
         Log.i("INFO", "Search");
 
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        MovieListFragment movieListFragment = new MovieListFragment();
+        MovieListFragment movieListFragment = MovieListFragment.newInstance(movie);
 
-        fragmentTransaction.add(R.id.main_frag, movieListFragment);
+        fragmentTransaction.replace(R.id.main_frag, movieListFragment);
+        fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 
@@ -82,8 +86,29 @@ public class MainActivity extends AppCompatActivity implements MovieListFragment
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
         transaction.replace(R.id.main_frag, newFragment);
-        transaction.addToBackStack("movie");
+        transaction.addToBackStack(null);
 
         transaction.commit();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (getFragmentManager().getBackStackEntryCount() == 0) {
+            this.finish();
+        } else {
+            getFragmentManager().popBackStack();
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                if(getSupportFragmentManager().getBackStackEntryCount()>0)
+                    getSupportFragmentManager().popBackStack();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
