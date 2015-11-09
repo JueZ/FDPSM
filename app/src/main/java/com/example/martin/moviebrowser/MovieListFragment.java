@@ -2,16 +2,22 @@ package com.example.martin.moviebrowser;
 
 import android.app.Activity;
 import android.app.ListFragment;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Martin on 08.11.2015.
  */
-public class MovieListFragment extends ListFragment {
+public class MovieListFragment extends ListFragment implements MovieAPIAsync.AsyncListener {
+
+    private List<Movie> movies;
 
     public static MovieListFragment newInstance(String movie) {
         MovieListFragment f = new MovieListFragment();
@@ -32,13 +38,19 @@ public class MovieListFragment extends ListFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        MovieAPIAsync movieAPIAsync = new MovieAPIAsync(MovieListFragment.this, 's');
+        String query = Uri.encode(getMovieName());
+        String uri = "http://www.omdbapi.com/?s=" + query;
 
+        movieAPIAsync.execute(uri);
 
-        String[] values = new String[] { getMovieName(), "B", "C", "D" };
+        /*
+            String[] values = new String[] { getMovieName(), "B", "C", "D" };
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, values);
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, values);
 
-        setListAdapter(adapter);
+            setListAdapter(adapter);
+        */
     }
 
     @Override
@@ -49,6 +61,22 @@ public class MovieListFragment extends ListFragment {
         Log.i("CLICK", item);
 
         movieSelectedListener.onMovieSelected(item);
+    }
+
+    @Override
+    public void setResults(ArrayList<Movie> results) {
+
+        ArrayList<String> strings = new ArrayList<String>();
+
+        for(Movie movie:results) {
+            strings.add(movie.getTitle());
+        }
+
+        String[] values = strings.toArray(new String[strings.size()]);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, values);
+
+        setListAdapter(adapter);
     }
 
     public interface OnMovieSelectedListener {

@@ -21,7 +21,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Description"
-        android:id="@+id/textViewDescription"
+        android:text="Runtime"
+        android:id="@+id/textViewRuntime"
+        android:layout_gravity="center_horizontal" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Year"
+        android:id="@+id/textViewYearOfRelease"
         android:layout_gravity="center_horizontal" />
 </LinearLayout>
