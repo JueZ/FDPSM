@@ -1,31 +1,44 @@
 package com.example.martin.moviebrowser;
 
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
+import android.view.View;
 
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.OptionsItem;
+import org.androidannotations.annotations.OptionsMenu;
+import org.androidannotations.annotations.UiThread;
+import org.androidannotations.annotations.ViewById;
+
+@EActivity(R.layout.activity_main)
+@OptionsMenu(R.menu.options_menu)
 public class MainActivity extends AppCompatActivity implements MovieListFragment.OnMovieSelectedListener {
+
+    @ViewById(R.id.my_toolbar)
+    View viewtoolbar;
+
+    @AfterViews
+    void afterViews() {
+        Toolbar toolbar = (Toolbar) viewtoolbar;
+        setSupportActionBar(toolbar);
+        toolbar.setTitle(getTitle());
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        setSupportActionBar(myToolbar);
-
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        //setContentView(R.layout.activity_main);
 
         Intent intent = getIntent();
         handleIntent(intent);
@@ -34,15 +47,20 @@ public class MainActivity extends AppCompatActivity implements MovieListFragment
 
     }
 
-    private void doMySearch(String movie) {
+    @UiThread
+    public void doMySearch(String movie) {
         Log.i("INFO", "Search");
 
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        MovieListFragment movieListFragment = MovieListFragment.newInstance(movie);
+        MovieListFragment_ movieListFragment1 = new MovieListFragment_();
 
-        fragmentTransaction.replace(R.id.main_frag, movieListFragment);
+        Bundle args = new Bundle();
+        args.putString("movie", movie);
+        movieListFragment1.setArguments(args);
+
+        fragmentTransaction.replace(R.id.main_frag, movieListFragment1);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
@@ -54,6 +72,8 @@ public class MainActivity extends AppCompatActivity implements MovieListFragment
         handleIntent(intent);
     }
 
+    // @Receiver(actionname = Intent.ACTION_SEARCH) hat leider das Ivent nicht bekommen, daher haben wir das Event weiterhin ohne Android Annotations implementiert.
+    // Alle anderen Events sind mittels Android Annotations umgesetzt.
     private void handleIntent(Intent intent) {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
@@ -63,10 +83,7 @@ public class MainActivity extends AppCompatActivity implements MovieListFragment
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.options_menu, menu);
 
-        // Associate searchable configuration with the SearchView
         SearchManager searchManager =
                 (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         SearchView searchView =
@@ -79,19 +96,26 @@ public class MainActivity extends AppCompatActivity implements MovieListFragment
 
     @Override
     public void onMovieSelected(String movie) {
+
         // CALLBACK ON MOVIE SELECTED
         Log.i("CALLBACK", movie);
 
-        Fragment newFragment = MovieDetailFragment.newInstance(movie);
+        MovieDetailFragment_ newFragment1 = new MovieDetailFragment_();
+
+        Bundle args = new Bundle();
+        args.putString("movie", movie);
+        newFragment1.setArguments(args);
+
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
-        transaction.replace(R.id.main_frag, newFragment);
+        transaction.replace(R.id.main_frag, newFragment1);
         transaction.addToBackStack(null);
 
         transaction.commit();
     }
 
-    @Override
+    // https://github.com/excilys/androidannotations/wiki/Android-Backward-Compatibility
+    // generates onkeydown event
     public void onBackPressed() {
         if (getFragmentManager().getBackStackEntryCount() == 0) {
             this.finish();
@@ -100,15 +124,10 @@ public class MainActivity extends AppCompatActivity implements MovieListFragment
         }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            // Respond to the action bar's Up/Home button
-            case android.R.id.home:
-                if(getSupportFragmentManager().getBackStackEntryCount()>0)
-                    getSupportFragmentManager().popBackStack();
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
+    @OptionsItem
+    void homeSelected() {
+        if (getSupportFragmentManager().getBackStackEntryCount() > 0)
+            getSupportFragmentManager().popBackStack();
     }
+
 }

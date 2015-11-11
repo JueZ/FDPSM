@@ -2,12 +2,15 @@ package com.example.martin.moviebrowser;
 
 import android.app.Activity;
 import android.app.ListFragment;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.ListView;
+
+import org.androidannotations.annotations.Background;
+import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.ItemClick;
+import org.androidannotations.annotations.UiThread;
+import org.androidannotations.annotations.rest.RestService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,20 +18,14 @@ import java.util.List;
 /**
  * Created by Martin on 08.11.2015.
  */
-public class MovieListFragment extends ListFragment implements MovieAPIAsync.AsyncListener {
 
-    private List<Movie> movies;
+@EFragment(android.R.layout.simple_list_item_1)
+public class MovieListFragment extends ListFragment {
 
-    public static MovieListFragment newInstance(String movie) {
-        MovieListFragment f = new MovieListFragment();
+    OnMovieSelectedListener movieSelectedListener;
 
-        // Supply index input as an argument.
-        Bundle args = new Bundle();
-        args.putString("movie", movie);
-        f.setArguments(args);
-
-        return f;
-    }
+    @RestService
+    MovieDBClient movieDBClient;
 
     public String getMovieName() {
         return getArguments().getString("movie");
@@ -38,37 +35,39 @@ public class MovieListFragment extends ListFragment implements MovieAPIAsync.Asy
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        MovieAPIAsync movieAPIAsync = new MovieAPIAsync(MovieListFragment.this, 's');
-        String query = Uri.encode(getMovieName());
-        String uri = "http://www.omdbapi.com/?s=" + query;
+        executeSearchQuery(getMovieName());
+    }
 
-        movieAPIAsync.execute(uri);
+    @ItemClick
+    public void listItemClicked(String text) {
 
-        /*
-            String[] values = new String[] { getMovieName(), "B", "C", "D" };
+        //String item = (String) getListAdapter().getItem(position);
+        Log.i("CLICK", text);
+
+        movieSelectedListener.onMovieSelected(text);
+    }
+
+    @Background
+    void executeSearchQuery(String query) {
+        MovieList movieList = movieDBClient.getMovieList(query);
+        setResults(movieList.getMovies());
+
+    }
+
+    @UiThread
+    public void setResults(List<Movie> results) {
+
+        if (results == null) {
+            String[] values = new String[]{"Not found"};
 
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, values);
-
             setListAdapter(adapter);
-        */
-    }
 
-    @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        // TODO IMPLEMENT CLICK
-
-        String item = (String) getListAdapter().getItem(position);
-        Log.i("CLICK", item);
-
-        movieSelectedListener.onMovieSelected(item);
-    }
-
-    @Override
-    public void setResults(ArrayList<Movie> results) {
-
+            return;
+        }
         ArrayList<String> strings = new ArrayList<String>();
 
-        for(Movie movie:results) {
+        for (Movie movie : results) {
             strings.add(movie.getTitle());
         }
 
@@ -82,8 +81,6 @@ public class MovieListFragment extends ListFragment implements MovieAPIAsync.Asy
     public interface OnMovieSelectedListener {
         public void onMovieSelected(String name);
     }
-
-    OnMovieSelectedListener movieSelectedListener;
 
     @Override
     public void onAttach(Activity activity) {
