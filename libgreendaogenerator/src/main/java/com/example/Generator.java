@@ -7,9 +7,9 @@ import de.greenrobot.daogenerator.Property;
 
 public class Generator {
     public static void main(String[] args) throws Exception {
-        Schema schema = new Schema(1000, "com.example.martin.moviebrowser");
+        Schema schema = new Schema(1000, "com.example.martin.moviebrowser.dao");
         addNote(schema);
-        new DaoGenerator().generateAll(schema, "../app/src/main/java");
+        new DaoGenerator().generateAll(schema, "app/src/main/java/");
     }
 
     private static void addNote(Schema schema) {
